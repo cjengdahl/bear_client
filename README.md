@@ -16,4 +16,4 @@ It sets up a lightweight local HTTP server to handle Bear's callback after openi
 
 Clone this repository (or just copy `bear_x_url_callback.py`):
 - `git clone https://github.com/cjengdahl/bear_client.git` and reference directly
-- or `pip install git+https://github.com/cjengdahl/bear_client.git@v0.1.0`
+- or `pip install git+https://github.com/cjengdahl/bear_client.git@v0.1.2`
