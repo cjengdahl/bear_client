@@ -15,7 +15,7 @@ PORT = 8080
 class BearCallbackHandler(http.server.BaseHTTPRequestHandler):
 
     # prevent ddos-ing the callback
-    handled = False 
+    handled = False
 
     def __init__(self, *args, callback_handler=None, **kwargs):
         self.callback_handler = callback_handler
@@ -29,7 +29,7 @@ class BearCallbackHandler(http.server.BaseHTTPRequestHandler):
         parsed_path = urllib.parse.urlparse(self.path)
         query = urllib.parse.parse_qs(parsed_path.query)
         if parsed_path.path == "/success":
-            try:    
+            try:
                 self.callback_handler(self)
             except Exception as e:
                 self.send_response(500)
@@ -89,23 +89,27 @@ def generate_url(note_id=None, title=None):
         bear_url += f"&title={title}"
     return bear_url
 
-def run(callback_handler, note_id=None, title=None):
-    server_thread = threading.Thread(target=run_server, args=[callback_handler], daemon=True)
-    server_thread.start()
-    shutdown_if_idle_thread = threading.Thread(target=shutdown_if_idle, kwargs={"timeout":4},daemon=True)
-    shutdown_if_idle_thread.start()
-    get_note(note_id=note_id, title=title)
-
-    # wait for the server thread to finish (which will happen after shutdown)
-    server_thread.join()
-
-
 if __name__ == "__main__":
 
+    # one or the other
+    note_id = None
+    title = "A Wonderful New Note"
+
+    # get and do something with the contents
     def callback_handler(BearCallbackHandler):
         query = urllib.parse.urlparse(BearCallbackHandler.path).query
         content = urllib.parse.parse_qs(query)
         note = content.get("note")
         print(note)
-    
-    run(callback_handler, title="A Wonderful New Note")
+
+    # run the x callback url server in the main thread
+    server_thread = threading.Thread(target=run_server, args=[callback_handler], daemon=True)
+    server_thread.start()
+    shutdown_if_idle_thread = threading.Thread(target=shutdown_if_idle, kwargs={"timeout":4},daemon=True)
+    shutdown_if_idle_thread.start()
+
+    ## make the api call
+    get_note(note_id=note_id, title=title)
+
+    # wait for the server thread to finish (which will happen after shutdown)
+    server_thread.join()
